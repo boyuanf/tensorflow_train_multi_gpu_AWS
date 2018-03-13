@@ -210,7 +210,8 @@ def train():
         # Calculate the gradients for each model tower.
         tower_grads = []
         correct_sum = []
-        with tf.variable_scope(tf.get_variable_scope(), reuse=tf.AUTO_REUSE) as var_scope:
+        with tf.variable_scope(tf.get_variable_scope(), reuse=tf.AUTO_REUSE) as var_scope:  # a good way to share variables
+        #with tf.variable_scope(tf.get_variable_scope()) as var_scope:
             for i in xrange(FLAGS.num_gpus):
                 with tf.device('/gpu:%d' % i):
                     with tf.name_scope('%s_%d' % (TOWER_NAME, i)) as scope:
@@ -255,7 +256,9 @@ def train():
             MOVING_AVERAGE_DECAY, global_step)
         variables_averages_op = variable_averages.apply(tf.trainable_variables())
         # Group all updates to into a single train op.
-        train_op = tf.group(apply_gradient_op, variables_averages_op)
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        with tf.control_dependencies(update_ops):
+            train_op = tf.group(apply_gradient_op, variables_averages_op)
         # Create a saver.
         saver = tf.train.Saver(tf.global_variables())
         # Build the summary operation from the last tower summaries.
