@@ -210,7 +210,7 @@ def train():
         # Calculate the gradients for each model tower.
         tower_grads = []
         correct_sum = []
-        with tf.variable_scope(tf.get_variable_scope()) as var_scope:
+        with tf.variable_scope(tf.get_variable_scope(), reuse=tf.AUTO_REUSE) as var_scope:
             for i in xrange(FLAGS.num_gpus):
                 with tf.device('/gpu:%d' % i):
                     with tf.name_scope('%s_%d' % (TOWER_NAME, i)) as scope:
@@ -220,7 +220,7 @@ def train():
                         loss, correct = tower_loss(scope, images_batch, labels_batch)
                         correct_sum.append(tf.cast(correct, tf.float32))
                         # Reuse variables for the next tower.
-                        var_scope.reuse_variables()
+                        #var_scope.reuse_variables()
 
                         # Retain the summaries from the final tower.
                         summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
